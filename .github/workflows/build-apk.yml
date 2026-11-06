@@ -1,0 +1,46 @@
+
+name: Build Elsewhere APK
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Extract source code
+        run: unzip -q elsewhere-google-shortlink-fix.zip
+
+      - name: Setup Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Get dependencies
+        working-directory: elsewhere-main
+        run: flutter pub get
+
+      - name: Build APK
+        working-directory: elsewhere-main
+        run: flutter build apk --debug
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: Elsewhere-Modified-APK
+          path: elsewhere-main/build/app/outputs/flutter-apk/app-debug.apk
+          retention-days: 30
